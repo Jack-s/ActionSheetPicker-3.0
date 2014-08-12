@@ -3,11 +3,11 @@
 [![Platform](https://img.shields.io/cocoapods/p/ActionSheetPicker-3.0.svg)](http://cocoadocs.org/docsets/ActionSheetPicker-3.0)
 [![Issues](http://img.shields.io/github/issues/skywinder/ActionSheetPicker-3.0.svg)](https://github.com/skywinder/ActionSheetPicker-3.0/issues?state=open)
 
-Since the [Tim's repo](https://github.com/TimCinel/ActionSheetPicker) is outdated, I forked from this repo and implement a bunch of UI fixes, crush-fixes and different customisation abilites.
+Since the [Tim's repo](https://github.com/TimCinel/ActionSheetPicker) is outdated, I forked from his repo and implement a bunch of UI fixes, crush-fixes and different customisation abilites.
 
-I try to resolve a lot of pull requests and issues in Tim's repo by time, but new updates will be added here.
+I resolved almost all (more than 60 pull requests and issues) in Tim's repo, but new updates will be added here.
 
-`pod 'ActionSheetPicker-3.0', '~> 1.0.12'`
+`pod 'ActionSheetPicker-3.0', '~> 1.0.18'` (**iOS 8** compatible already!)
 
 Please welcome: **ActionSheetPicker-3.0**, with fix crashes, new pickers and additions!
 
@@ -83,6 +83,9 @@ NSArray *colors = [NSArray arrayWithObjects:@"Red", @"Green", @"Blue", @"Orange"
 ```
 
 ## Screen Shots ##
+
+
+![actionsheetpicker-demo](https://cloud.githubusercontent.com/assets/3356474/3878780/50276c2a-2172-11e4-9d4f-a261d1a1331f.gif)
 
 ![ActionSheetPicker](https://raw.githubusercontent.com/skywinder/ActionSheetPicker-3.0/master/Screenshots/string.png "ActionSheetPicker")
 ![ActionSheetDatePicker](https://raw.githubusercontent.com/skywinder/ActionSheetPicker-3.0/master/Screenshots/date.png "ActionSheetDatePicker")

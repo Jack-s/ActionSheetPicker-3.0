@@ -26,6 +26,7 @@
 //
 
 #import "AbstractActionSheetPicker.h"
+#import "SWActionSheet.h"
 #import <objc/message.h>
 #import <sys/utsname.h>
 
@@ -47,7 +48,7 @@ BOOL isIPhone4()
 @property(nonatomic, unsafe_unretained) id target;
 @property(nonatomic, assign) SEL successAction;
 @property(nonatomic, assign) SEL cancelAction;
-@property(nonatomic, strong) UIActionSheet *actionSheet;
+@property(nonatomic, strong) SWActionSheet *actionSheet;
 @property(nonatomic, strong) UIPopoverController *popOverController;
 @property(nonatomic, strong) NSObject *selfReference;
 
@@ -57,7 +58,7 @@ BOOL isIPhone4()
 
 - (void)configureAndPresentActionSheetForView:(UIView *)aView;
 
-- (void)presentActionSheet:(UIActionSheet *)actionSheet;
+- (void)presentActionSheet:(SWActionSheet *)actionSheet;
 
 - (void)presentPopover:(UIPopoverController *)popover;
 
@@ -81,20 +82,6 @@ BOOL isIPhone4()
 @end
 
 @implementation AbstractActionSheetPicker
-@synthesize title = _title;
-@synthesize containerView = _containerView;
-@synthesize barButtonItem = _barButtonItem;
-@synthesize target = _target;
-@synthesize successAction = _successAction;
-@synthesize cancelAction = _cancelAction;
-@synthesize actionSheet = _actionSheet;
-@synthesize popOverController = _popOverController;
-@synthesize selfReference = _selfReference;
-@synthesize pickerView = _pickerView;
-@dynamic viewSize;
-@synthesize customButtons = _customButtons;
-@synthesize hideCancel = _hideCancel;
-@synthesize presentFromRect = _presentFromRect;
 
 #pragma mark - Abstract Implementation
 
@@ -113,7 +100,7 @@ BOOL isIPhone4()
         else if ( [origin isKindOfClass:[UIView class]] )
             self.containerView = origin;
         else
-                NSAssert(NO, @"Invalid origin provided to ActionSheetPicker ( %@ )", origin);
+            NSAssert(NO, @"Invalid origin provided to ActionSheetPicker ( %@ )", origin);
 
         // Initialize default bar buttons so they can be overridden before the 'showActionSheetPicker' is called
         UIBarButtonItem *cancelBtn = [self createButtonWithType:UIBarButtonSystemItemCancel target:self
@@ -180,12 +167,16 @@ BOOL isIPhone4()
     [masterView addSubview:self.toolbar];
 
     //ios7 picker draws a darkened alpha-only region on the first and last 8 pixels horizontally, but blurs the rest of its background.  To make the whole popup appear to be edge-to-edge, we have to add blurring to the remaining left and right edges.
-    if (NSFoundationVersionNumber > NSFoundationVersionNumber_iOS_6_1) {
+    if ( NSFoundationVersionNumber > NSFoundationVersionNumber_iOS_6_1 )
+    {
         CGRect f = CGRectMake(0, self.toolbar.frame.origin.y, 8, masterView.frame.size.height - self.toolbar.frame.origin.y);
         UIToolbar *leftEdge = [[UIToolbar alloc] initWithFrame:f];
         f.origin.x = masterView.frame.size.width - 8;
         UIToolbar *rightEdge = [[UIToolbar alloc] initWithFrame:f];
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "UnavailableInDeploymentTarget"
         leftEdge.barTintColor = rightEdge.barTintColor = self.toolbar.barTintColor;
+#pragma clang diagnostic pop
         [masterView insertSubview:leftEdge atIndex:0];
         [masterView insertSubview:rightEdge atIndex:0];
     }
@@ -243,8 +234,9 @@ BOOL isIPhone4()
     UIBarButtonItem *button = (UIBarButtonItem *) sender;
     NSInteger index = button.tag;
     NSAssert((index >= 0 && index < self.customButtons.count), @"Bad custom button tag: %d, custom button count: %d", index, self.customButtons.count);
-    NSAssert([self.pickerView respondsToSelector:@selector(selectRow:inComponent:animated:)], @"customButtonPressed not overridden, cannot interact with subclassed pickerView");
-    NSDictionary *buttonDetails = [self.customButtons objectAtIndex:index];
+    NSAssert([self.pickerView respondsToSelector:@
+            selector(selectRow:inComponent:animated:)], @"customButtonPressed not overridden, cannot interact with subclassed pickerView");
+    NSDictionary *buttonDetails = [self.customButtons objectAtIndex:(NSUInteger) index];
     NSAssert(buttonDetails != NULL, @"Custom button dictionary is invalid");
     NSInteger buttonValue = [[buttonDetails objectForKey:@"buttonValue"] intValue];
     UIPickerView *picker = (UIPickerView *) self.pickerView;
@@ -320,26 +312,22 @@ BOOL isIPhone4()
     toolBarItemlabel.text = aTitle;
 
     CGFloat strikeWidth;
-    if ( NSFoundationVersionNumber > NSFoundationVersionNumber_iOS_6_1)
+    CGSize textSize;
+    if ( NSFoundationVersionNumber > NSFoundationVersionNumber_iOS_6_1 )
     {
-        CGSize textSize = [[toolBarItemlabel text] sizeWithAttributes:@{NSFontAttributeName:[toolBarItemlabel font]}];
-        strikeWidth = textSize.width;
-    }
-    else
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "UnavailableInDeploymentTarget"
+        textSize = [[toolBarItemlabel text] sizeWithAttributes:@{NSFontAttributeName : [toolBarItemlabel font]}];
+#pragma clang diagnostic pop
+    } else
     {
-        CGSize textSize;
-        if (NSFoundationVersionNumber > NSFoundationVersionNumber_iOS_6_1) {
-            textSize = [[toolBarItemlabel text]  sizeWithAttributes:
-                                                         @{NSFontAttributeName:
-                                                                 [toolBarItemlabel font]}];
-        }
-        else {
-            textSize = [[toolBarItemlabel text] sizeWithFont:[toolBarItemlabel font]];
-        }
+        textSize = [[toolBarItemlabel text] sizeWithFont:[toolBarItemlabel font]];
 
-        strikeWidth = textSize.width;
     }
-    if (strikeWidth < 180)
+
+    strikeWidth = textSize.width;
+
+    if ( strikeWidth < 180 )
     {
         [toolBarItemlabel sizeToFit];
     }
@@ -354,8 +342,12 @@ BOOL isIPhone4()
     UIBarButtonItem *barButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:type target:target
                                                                                action:buttonAction];
 
-    if ( NSFoundationVersionNumber > NSFoundationVersionNumber_iOS_6_1)
+
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "UnavailableInDeploymentTarget"
+    if ( NSFoundationVersionNumber > NSFoundationVersionNumber_iOS_6_1 )
         [barButton setTintColor:[[UIApplication sharedApplication] keyWindow].tintColor];
+#pragma clang diagnostic pop
 
     return barButton;
 }
@@ -404,44 +396,22 @@ BOOL isIPhone4()
 
 - (void)configureAndPresentActionSheetForView:(UIView *)aView
 {
-    NSString *paddedSheetTitle = nil;
-    CGFloat sheetHeight = self.viewSize.height - 47;
-    if ( [self isViewPortrait] )
-    {
-        paddedSheetTitle = @"\n\n\n"; // looks hacky to me
-    } else
-    {
-        NSString *reqSysVer = @"5.0";
-        NSString *currSysVer = [[UIDevice currentDevice] systemVersion];
-        if ( [currSysVer compare:reqSysVer options:NSNumericSearch] != NSOrderedAscending )
-        {
-            sheetHeight = self.viewSize.width;
-        } else
-        {
-            sheetHeight += 103;
-        }
-    }
-    _actionSheet = [[UIActionSheet alloc] initWithTitle:paddedSheetTitle delegate:nil cancelButtonTitle:nil
-                                 destructiveButtonTitle:nil otherButtonTitles:nil];
-    [_actionSheet setActionSheetStyle:UIActionSheetStyleBlackTranslucent];
-    [_actionSheet addSubview:aView];
+    _actionSheet = [[SWActionSheet alloc] initWithView:aView];
+
     [self presentActionSheet:_actionSheet];
 
     // Use beginAnimations for a smoother popup animation, otherwise the UIActionSheet pops into view
     [UIView beginAnimations:nil context:nil];
-    _actionSheet.bounds = CGRectMake(0, 0, self.viewSize.width, sheetHeight);
+//    _actionSheet.bounds = CGRectMake(0, 0, self.viewSize.width, sheetHeight);
     [UIView commitAnimations];
 }
 
-- (void)presentActionSheet:(UIActionSheet *)actionSheet
+- (void)presentActionSheet:(SWActionSheet *)actionSheet
 {
     NSParameterAssert(actionSheet != NULL);
     if ( self.barButtonItem )
         [actionSheet showFromBarButtonItem:_barButtonItem animated:YES];
-    else if ( self.containerView && NO == CGRectIsEmpty(self.presentFromRect) )
-        [actionSheet showFromRect:_presentFromRect inView:_containerView animated:YES];
-    else
-        [actionSheet showInView:_containerView];
+        [actionSheet showInContainerView];
 }
 
 - (void)configureAndPresentPopoverForView:(UIView *)aView
